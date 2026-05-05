@@ -49,6 +49,16 @@ Git metadata is not available in this directory (`.git` missing), so adopt this 
 - This skill is the source of truth for repository-specific Git workflow.
 - If skill content is updated, the latest version must be applied immediately.
 
+## UI Agent Operation Rule
+- For any UI-related request, always use the dedicated UI sub-agent first.
+- `app.py` modification is owned by the UI sub-agent.
+- If UI changes require backend/program changes outside UI ownership:
+  - UI sub-agent must report required backend change points to the main agent.
+  - Main agent performs backend/program code changes.
+- UI sub-agent must report in Korean by default.
+- Before executing UI work, always check and follow:
+  - `skills/ui-management/SKILL.md`
+
 ## Security & Configuration Tips
 - Treat `.env` as local-only and never commit secrets.
 - Remove or sanitize sensitive account/trade artifacts before sharing (`*.json`, `assets.xlsx`, backups).
