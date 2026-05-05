@@ -226,7 +226,11 @@ HTML_TEMPLATE = """<!doctype html>
 
           const summary = clusterTotals[item.main] || { usdtValue: 0 };
           const usdtValue = summary.usdtValue;
-          const mainPrice = Number(symbolPriceMap[item.main] || 0);
+          let mainPrice = Number(symbolPriceMap[item.main] || 0);
+          if (!(mainPrice > 0)) {
+            const candidates = clusterPriceCandidates[item.main] || [];
+            mainPrice = candidates.length > 0 ? Number(candidates[0]) : 0;
+          }
           const amount = mainPrice > 0 ? usdtValue / mainPrice : 0;
           const usdtPrice = mainPrice > 0 ? mainPrice : 0;
 
@@ -386,3 +390,4 @@ if __name__ == "__main__":
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
 
     app.run(host=host, port=port, debug=True, use_reloader=False)
+
