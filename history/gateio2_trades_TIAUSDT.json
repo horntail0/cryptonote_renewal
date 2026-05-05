@@ -1,0 +1,58 @@
+{
+  "TIAUSDT": [
+    {
+      "id": "22407023",
+      "create_time": "1752552393",
+      "create_time_ms": "1752552393358.881000",
+      "currency_pair": "TIA_USDT",
+      "side": "buy",
+      "role": "taker",
+      "amount": "2.76",
+      "price": "1.8048",
+      "order_id": "875450656751",
+      "fee": "0.0027324",
+      "fee_currency": "TIA",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "22407023",
+      "text": "android"
+    },
+    {
+      "id": "22548084",
+      "create_time": "1753024731",
+      "create_time_ms": "1753024731243.660000",
+      "currency_pair": "TIA_USDT",
+      "side": "buy",
+      "role": "maker",
+      "amount": "3.41",
+      "price": "2.2002",
+      "order_id": "879394513258",
+      "fee": "0.0033759",
+      "fee_currency": "TIA",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "22548084",
+      "text": "android"
+    },
+    {
+      "id": "22633009",
+      "create_time": "1753324722",
+      "create_time_ms": "1753324722618.748000",
+      "currency_pair": "TIA_USDT",
+      "side": "buy",
+      "role": "maker",
+      "amount": "2.58",
+      "price": "1.935",
+      "order_id": "882189988367",
+      "fee": "0.0025542",
+      "fee_currency": "TIA",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "22633009",
+      "text": "android"
+    }
+  ]
+}

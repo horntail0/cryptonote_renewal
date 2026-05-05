@@ -1,0 +1,58 @@
+{
+  "BNBUSDT": [
+    {
+      "id": "15071234",
+      "create_time": "1754093093",
+      "create_time_ms": "1754093093293.376000",
+      "currency_pair": "BNB_USDT",
+      "side": "buy",
+      "role": "maker",
+      "amount": "0.023",
+      "price": "756.8",
+      "order_id": "888209507169",
+      "fee": "0.00002277",
+      "fee_currency": "BNB",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "15071234",
+      "text": "android"
+    },
+    {
+      "id": "15071233",
+      "create_time": "1754093093",
+      "create_time_ms": "1754093093204.387000",
+      "currency_pair": "BNB_USDT",
+      "side": "buy",
+      "role": "maker",
+      "amount": "0.009",
+      "price": "756.8",
+      "order_id": "888209507169",
+      "fee": "0.00000891",
+      "fee_currency": "BNB",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "15071233",
+      "text": "android"
+    },
+    {
+      "id": "15071232",
+      "create_time": "1754093093",
+      "create_time_ms": "1754093093196.276000",
+      "currency_pair": "BNB_USDT",
+      "side": "buy",
+      "role": "maker",
+      "amount": "0.034",
+      "price": "756.8",
+      "order_id": "888209507169",
+      "fee": "0.00003366",
+      "fee_currency": "BNB",
+      "point_fee": "0",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "15071232",
+      "text": "android"
+    }
+  ]
+}

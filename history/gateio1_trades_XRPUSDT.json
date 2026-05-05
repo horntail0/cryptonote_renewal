@@ -1,0 +1,22 @@
+{
+  "XRPUSDT": [
+    {
+      "id": "41820413",
+      "create_time": "1755745482",
+      "create_time_ms": "1755745482449.995000",
+      "currency_pair": "XRP_USDT",
+      "side": "buy",
+      "role": "taker",
+      "amount": "1",
+      "price": "2.931",
+      "order_id": "899675523640",
+      "fee": "0",
+      "fee_currency": "XRP",
+      "point_fee": "0.005862",
+      "gt_fee": "0",
+      "amend_text": "-",
+      "sequence_id": "41820413",
+      "text": "android"
+    }
+  ]
+}

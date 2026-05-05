@@ -1,0 +1,49 @@
+{
+  "BNSOLUSDT": [
+    {
+      "symbol": "BNSOLUSDT",
+      "id": 3482616,
+      "orderId": 109791445,
+      "orderListId": -1,
+      "price": "175.80000000",
+      "qty": "0.44400000",
+      "quoteQty": "78.05520000",
+      "commission": "0.00009119",
+      "commissionAsset": "BNB",
+      "time": 1747109610217,
+      "isBuyer": false,
+      "isMaker": false,
+      "isBestMatch": true
+    },
+    {
+      "symbol": "BNSOLUSDT",
+      "id": 3878519,
+      "orderId": 162464479,
+      "orderListId": -1,
+      "price": "205.80000000",
+      "qty": "0.09700000",
+      "quoteQty": "19.96260000",
+      "commission": "0.00001960",
+      "commissionAsset": "BNB",
+      "time": 1753114815049,
+      "isBuyer": false,
+      "isMaker": false,
+      "isBestMatch": true
+    },
+    {
+      "symbol": "BNSOLUSDT",
+      "id": 3887742,
+      "orderId": 162702250,
+      "orderListId": -1,
+      "price": "212.10000000",
+      "qty": "0.23400000",
+      "quoteQty": "49.63140000",
+      "commission": "0.00004896",
+      "commissionAsset": "BNB",
+      "time": 1753156977286,
+      "isBuyer": false,
+      "isMaker": true,
+      "isBestMatch": true
+    }
+  ]
+}

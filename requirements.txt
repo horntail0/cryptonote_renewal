@@ -1,0 +1,7 @@
+python-binance
+requests
+python-dotenv
+pandas
+PyJWT
+websocket-client
+python-dateutil

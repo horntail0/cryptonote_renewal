@@ -1,0 +1,19 @@
+{
+  "SOLFDUSD": [
+    {
+      "symbol": "SOLFDUSD",
+      "id": 32595566,
+      "orderId": 327055684,
+      "orderListId": -1,
+      "price": "163.30000000",
+      "qty": "0.18000000",
+      "quoteQty": "29.39400000",
+      "commission": "0.00000000",
+      "commissionAsset": "BNB",
+      "time": 1710372203463,
+      "isBuyer": true,
+      "isMaker": true,
+      "isBestMatch": true
+    }
+  ]
+}

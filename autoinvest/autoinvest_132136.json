@@ -1,0 +1,60 @@
+{
+  "code": 200,
+  "list": [
+    {
+      "asset": "BTC",
+      "ratio": "55.00",
+      "cum_invest": "0.00555886",
+      "cum_hold": "0.000000",
+      "cum_redeem": "0.00555886",
+      "avg_price": "107860.5210420842",
+      "redeem_status": 0,
+      "lend_amount": "0",
+      "asset_money": "0.0"
+    },
+    {
+      "asset": "ETH",
+      "ratio": "15.00",
+      "cum_invest": "0.0408182",
+      "cum_hold": "0.000000",
+      "cum_redeem": "0.0408182",
+      "avg_price": "2460.7214428858",
+      "redeem_status": 0,
+      "lend_amount": "0",
+      "asset_money": "0.00"
+    },
+    {
+      "asset": "SOL",
+      "ratio": "10.0",
+      "cum_invest": "0.66866",
+      "cum_hold": "0.000000",
+      "cum_redeem": "0.66866",
+      "avg_price": "150.621242485",
+      "redeem_status": 0,
+      "lend_amount": "0",
+      "asset_money": "0.00"
+    },
+    {
+      "asset": "GT",
+      "ratio": "10.0",
+      "cum_invest": "4.33132",
+      "cum_hold": "0.000000",
+      "cum_redeem": "4.33132",
+      "avg_price": "15.3627254509",
+      "redeem_status": 0,
+      "lend_amount": "0",
+      "asset_money": "0.00"
+    },
+    {
+      "asset": "SUI",
+      "ratio": "10.0",
+      "cum_invest": "35.63858",
+      "cum_hold": "0.000000",
+      "cum_redeem": "35.63858",
+      "avg_price": "2.7809619238",
+      "redeem_status": 0,
+      "lend_amount": "0",
+      "asset_money": "0.00"
+    }
+  ]
+}

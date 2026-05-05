@@ -1,0 +1,24 @@
+{
+  "assets": [
+    {
+      "symbol": "BTC",
+      "amount": 0.0076489
+    },
+    {
+      "symbol": "ETH",
+      "amount": 0.05414
+    },
+    {
+      "symbol": "SOL",
+      "amount": 0.86184
+    },
+    {
+      "symbol": "JitoSOL",
+      "amount": 9.87077
+    },
+    {
+      "symbol": "slisBNB",
+      "amount": 0.28997
+    }
+  ]
+}

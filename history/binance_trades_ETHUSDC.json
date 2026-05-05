@@ -1,0 +1,19 @@
+{
+  "ETHUSDC": [
+    {
+      "symbol": "ETHUSDC",
+      "id": 95698683,
+      "orderId": 3828909403,
+      "orderListId": -1,
+      "price": "1875.45000000",
+      "qty": "0.01890000",
+      "quoteQty": "35.44600500",
+      "commission": "0.03544601",
+      "commissionAsset": "USDC",
+      "time": 1741842118504,
+      "isBuyer": false,
+      "isMaker": true,
+      "isBestMatch": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+﻿# Local env / secrets
+.env
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+
+# Local notes
+할일.txt
+
+# Generated outputs
+assets.xlsx
+assets.html
+simulation_report.html
+
+# Archives
+*.zip
+
+# Optional local data overrides
+
+# Local backups / non-essential runtime data
+history_backup/
+history_backup_250809/
+HistoryManager.txt
+binance_trades_*.json
+gateio_trades_*.json

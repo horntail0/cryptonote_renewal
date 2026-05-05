@@ -1,0 +1,7 @@
+{
+  "assets": [
+    { "symbol": "BTC", "amount": 0.015 },
+    { "symbol": "ETH", "amount": 0.4 },
+    { "symbol": "USDT", "amount": 1200 }
+  ]
+}
