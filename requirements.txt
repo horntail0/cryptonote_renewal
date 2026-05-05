@@ -5,3 +5,5 @@ pandas
 PyJWT
 websocket-client
 python-dateutil
+flask==3.0.3
+itsdangerous>=2.1.2
