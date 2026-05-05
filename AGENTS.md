@@ -41,6 +41,14 @@ Git metadata is not available in this directory (`.git` missing), so adopt this 
 - PRs should include: purpose, changed files, run commands, and sample output/screenshots for report or Excel changes.
 - Reference related issue/task IDs when available.
 
+## Git Agent Operation Rule
+- For any Git-related request (status/branch/commit/push/pull/rebase/PR), always use a dedicated Git sub-agent.
+- The Git sub-agent must report to the user in Korean by default.
+- Before executing Git work, always check and follow:
+  - `skills/git-management/SKILL.md`
+- This skill is the source of truth for repository-specific Git workflow.
+- If skill content is updated, the latest version must be applied immediately.
+
 ## Security & Configuration Tips
 - Treat `.env` as local-only and never commit secrets.
 - Remove or sanitize sensitive account/trade artifacts before sharing (`*.json`, `assets.xlsx`, backups).
