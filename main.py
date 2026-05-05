@@ -96,6 +96,8 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
         exchange_assets[reader_name] = assets
         CW.assets = merge_coinasset_dicts(CW.assets, assets)
 
+    CW.exchange_assets = exchange_assets
+
     print("All assets loaded and merged successfully.")
     print("CoinWallet initialized with readers:", CW.readers.keys())
     print_exchange_asset_details(exchange_assets)
