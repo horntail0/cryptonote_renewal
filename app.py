@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 import json
 import os
@@ -85,8 +86,8 @@ HTML_TEMPLATE = """<!doctype html>
     <section class=\"panel hero\">
       <div class=\"hero-left\">
         <h1 class=\"title\">Crypto Portfolio Live Dashboard</h1>
-        <div class=\"sub\">»ý¼º ½Ã°¢: {{ generated_at }}</div>
-        <div class=\"note\">Âü°í: 717702¿øÀº »ç°í·Î À¯½ÇµÇ¾ú½À´Ï´Ù.</div>
+        <div class=\"sub\">ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½: {{ generated_at }}</div>
+        <div class=\"note\">ï¿½ï¿½ï¿½ï¿½: 717702ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÇµÇ¾ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.</div>
         <div class=\"summary-grid\">
           <div class=\"summary-card\"><div class=\"summary-k\">Total Assets (KRW)</div><div class=\"summary-v\">{{ total_assets_krw_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">USDT/KRW</div><div class=\"summary-v\">{{ usdt_krw_fmt }}</div></div>
@@ -97,21 +98,21 @@ HTML_TEMPLATE = """<!doctype html>
         </div>
       </div>
       <div class=\"total\">
-        <div class=\"label\">Ç¥½Ã ÇÕ°è (USDT)</div>
+        <div class=\"label\">Ç¥ï¿½ï¿½ ï¿½Õ°ï¿½ (USDT)</div>
         <div class=\"value\" id=\"visible-total\">{{ total_usdt_fmt }}</div>
       </div>
     </section>
 
     <section class=\"panel toolbar\" id=\"toggle-zone\">
       <div class=\"toggle-row\">
-        <span class=\"k\">¸ðµå</span>
+        <span class=\"k\">ï¿½ï¿½ï¿½</span>
         <label class=\"chip\">
           <input type=\"checkbox\" id=\"cluster-toggle\" checked />
           <span>Clustered</span>
         </label>
       </div>
       <div class=\"toggle-row\">
-        <span class=\"k\">°Å·¡¼Ò</span>
+        <span class=\"k\">ï¿½Å·ï¿½ï¿½ï¿½</span>
         {% for exchange in exchanges %}
         <label class=\"chip\">
           <input type=\"checkbox\" class=\"exchange-toggle\" value=\"{{ exchange }}\" checked />
@@ -127,8 +128,8 @@ HTML_TEMPLATE = """<!doctype html>
           <tr>
             <th>Symbol</th>
             <th style=\"text-align:right\">Amount</th>
-            <th class=\"sortable\" data-sort-key=\"price\" style=\"text-align:right\">USDT Price<span class=\"sort-indicator\">¢Õ</span></th>
-            <th class=\"sortable\" data-sort-key=\"value\" style=\"text-align:right\">USDT Value<span class=\"sort-indicator\">¡é</span></th>
+            <th class=\"sortable\" data-sort-key=\"price\" style=\"text-align:right\">USDT Price<span class=\"sort-indicator\">ï¿½ï¿½</span></th>
+            <th class=\"sortable\" data-sort-key=\"value\" style=\"text-align:right\">USDT Value<span class=\"sort-indicator\">ï¿½ï¿½</span></th>
             <th style=\"text-align:right\">Ratio (%)</th>
           </tr>
         </thead>
@@ -144,7 +145,7 @@ HTML_TEMPLATE = """<!doctype html>
           {% endfor %}
         </tbody>
       </table>
-      <div class=\"foot\">Clustered ON: ¸ÞÀÎ ½Éº¼ ±âÁØÀ¸·Î ÇÕ»ê Ç¥½ÃµË´Ï´Ù.</div>
+      <div class=\"foot\">Clustered ON: ï¿½ï¿½ï¿½ï¿½ ï¿½Éºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Õ»ï¿½ Ç¥ï¿½ÃµË´Ï´ï¿½.</div>
     </section>
   </div>
 
@@ -173,7 +174,7 @@ HTML_TEMPLATE = """<!doctype html>
       sortableHeaders.forEach((th) => {
         const indicator = th.querySelector('.sort-indicator');
         const key = th.dataset.sortKey;
-        indicator.textContent = key === sortKey ? (sortDir === 'asc' ? '¡è' : '¡é') : '¢Õ';
+        indicator.textContent = key === sortKey ? (sortDir === 'asc' ? 'ï¿½ï¿½' : 'ï¿½ï¿½') : 'ï¿½ï¿½';
       });
     }
     function sortVisibleRows() {
