@@ -22,6 +22,14 @@ def create_personal_wallet_reader():
     return PersonalWallet_Reader.PersonalWallet_Reader("personal", wallet_file_path)
 
 
+def create_exchange_reader(exchange_name, reader_cls, *args):
+    try:
+        return reader_cls(*args)
+    except Exception as e:
+        print(f"[{exchange_name}] reader/client 생성 실패, skip: {e}")
+        return None
+
+
 def run_cmd(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     return result.stdout.strip(), result.stderr.strip(), result.returncode
@@ -65,19 +73,75 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
 
     os.system("w32tm /resync")
     if os.environ["MOBILE"] == "0":
+        binance_reader = create_exchange_reader(
+            "binance",
+            Binance_Reader.Binance_Reader,
+            "binance",
+            os.getenv("BINANCE_API_KEY"),
+            os.getenv("BINANCE_SECRET_KEY"),
+        )
+        bithumb_reader = create_exchange_reader(
+            "bithumb",
+            Bithumb_Reader.Bithumb_Reader,
+            "bithumb",
+            os.getenv("BITHUMB_API_KEY"),
+            os.getenv("BITHUMB_SECRET_KEY"),
+        )
+        gateio1_reader = create_exchange_reader(
+            "gateio1",
+            Gateio_Reader.Gateio_Reader,
+            "gateio1",
+            os.getenv("GATEIO_API_KEY"),
+            os.getenv("GATEIO_SECRET_KEY"),
+        )
+        gateio2_reader = create_exchange_reader(
+            "gateio2",
+            Gateio_Reader.Gateio_Reader,
+            "gateio2",
+            os.getenv("GATEIO_API_KEY_2ND"),
+            os.getenv("GATEIO_SECRET_KEY_2ND"),
+        )
         CW = CoinWallet.CoinWallet(
-            binance_reader=Binance_Reader.Binance_Reader("binance", os.getenv("BINANCE_API_KEY"), os.getenv("BINANCE_SECRET_KEY")),
-            bithumb_reader=Bithumb_Reader.Bithumb_Reader("bithumb", os.getenv("BITHUMB_API_KEY"), os.getenv("BITHUMB_SECRET_KEY")),
-            gateio1_reader=Gateio_Reader.Gateio_Reader("gateio1", os.getenv("GATEIO_API_KEY"), os.getenv("GATEIO_SECRET_KEY")),
-            gateio2_reader=Gateio_Reader.Gateio_Reader("gateio2", os.getenv("GATEIO_API_KEY_2ND"), os.getenv("GATEIO_SECRET_KEY_2ND")),
+            binance_reader=binance_reader,
+            bithumb_reader=bithumb_reader,
+            gateio1_reader=gateio1_reader,
+            gateio2_reader=gateio2_reader,
             personal_reader=create_personal_wallet_reader(),
         )
     else:
+        binance_reader = create_exchange_reader(
+            "binance_mobile",
+            Binance_Reader.Binance_Reader,
+            "binance_mobile",
+            os.getenv("BINANCE_API_KEY_MOBILE"),
+            os.getenv("BINANCE_SECRET_KEY_MOBILE"),
+        )
+        bithumb_reader = create_exchange_reader(
+            "bithumb_mobile",
+            Bithumb_Reader.Bithumb_Reader,
+            "bithumb_mobile",
+            os.getenv("BITHUMB_API_KEY_V1"),
+            os.getenv("BITHUMB_SECRET_KEY_V1"),
+        )
+        gateio1_reader = create_exchange_reader(
+            "gateio1_mobile",
+            Gateio_Reader.Gateio_Reader,
+            "gateio1_mobile",
+            os.getenv("GATEIO_API_KEY"),
+            os.getenv("GATEIO_SECRET_KEY"),
+        )
+        gateio2_reader = create_exchange_reader(
+            "gateio2_mobile",
+            Gateio_Reader.Gateio_Reader,
+            "gateio2_mobile",
+            os.getenv("GATEIO_API_KEY_2ND"),
+            os.getenv("GATEIO_SECRET_KEY_2ND"),
+        )
         CW = CoinWallet.CoinWallet(
-            binance_reader=Binance_Reader.Binance_Reader("binance_mobile", os.getenv("BINANCE_API_KEY_MOBILE"), os.getenv("BINANCE_SECRET_KEY_MOBILE")),
-            bithumb_reader=Bithumb_Reader.Bithumb_Reader("bithumb_mobile", os.getenv("BITHUMB_API_KEY_V1"), os.getenv("BITHUMB_SECRET_KEY_V1")),
-            gateio1_reader=Gateio_Reader.Gateio_Reader("gateio1_mobile", os.getenv("GATEIO_API_KEY"), os.getenv("GATEIO_SECRET_KEY")),
-            gateio2_reader=Gateio_Reader.Gateio_Reader("gateio2_mobile", os.getenv("GATEIO_API_KEY_2ND"), os.getenv("GATEIO_SECRET_KEY_2ND")),
+            binance_reader=binance_reader,
+            bithumb_reader=bithumb_reader,
+            gateio1_reader=gateio1_reader,
+            gateio2_reader=gateio2_reader,
             personal_reader=create_personal_wallet_reader(),
         )
 
@@ -86,10 +150,14 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
         if reader is None:
             continue
         print(f"Loading assets from {reader_name}...")
-        if reader_name == "binance":
-            assets = load_binance_assets_with_breakdown(reader, CW)
-        else:
-            assets = reader.load_assets()
+        try:
+            if reader_name == "binance":
+                assets = load_binance_assets_with_breakdown(reader, CW)
+            else:
+                assets = reader.load_assets()
+        except Exception as e:
+            print(f"[{reader_name}] 자산 로딩 실패, skip: {e}")
+            continue
         temp_assets = CW.get_temporary_assets_dict(reader_name)
         if temp_assets:
             assets = merge_coinasset_dicts(assets, temp_assets)
@@ -109,14 +177,22 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
 
     calculate_ratios(CW)
 
-    CW.KRW_deposits = CW.readers["bithumb"].get_KRW_deposits()
-    CW.KRW_withdrawals, CW.KRW_fees = CW.readers["bithumb"].get_KRW_withdrawals()
-    CW.CurrentKRWUSDT = CW.readers["bithumb"].get_KRW_Currency("USDT")
-    CW.Benefit_Ratio = calculate_benefit_ratio(CW)
+    bithumb_reader = CW.readers.get("bithumb")
+    if bithumb_reader is not None:
+        try:
+            CW.KRW_deposits = bithumb_reader.get_KRW_deposits()
+            CW.KRW_withdrawals, CW.KRW_fees = bithumb_reader.get_KRW_withdrawals()
+            CW.CurrentKRWUSDT = bithumb_reader.get_KRW_Currency("USDT")
+            CW.Benefit_Ratio = calculate_benefit_ratio(CW)
+        except Exception as e:
+            print(f"[bithumb] KRW 입출금/환율 조회 실패, skip: {e}")
+    else:
+        print("[bithumb] reader가 없어 KRW 입출금/환율 조회를 skip합니다.")
 
     print(f"Total assets value: {CW.Total_Assets_value:.2f} USDT")
     print(f"Total stable assets value: {CW.Stable_Assets_value:.2f} USDT")
-    print(f"Stable Coin Ratio: {CW.Stable_Assets_value / CW.Total_Assets_value * 100:.2f}%")
+    stable_ratio = CW.Stable_Assets_value / CW.Total_Assets_value * 100 if CW.Total_Assets_value else 0.0
+    print(f"Stable Coin Ratio: {stable_ratio:.2f}%")
     print(f"KRWUSDT current rate: {CW.CurrentKRWUSDT:.5f}")
     print(f"Benefit Ratio: {CW.Benefit_Ratio:.2f}%")
 
@@ -297,12 +373,16 @@ def get_stable_asset_list(coin_wallet_assets):
 
 
 def calculate_ratios(CW):
+    if CW.Total_Assets_value == 0:
+        return
+
+    nonstable_assets_value = CW.Total_Assets_value - CW.Stable_Assets_value
     for coinasset in CW.assets.values():
         coinasset.ratio = coinasset.usdt_value / CW.Total_Assets_value * 100
         if coinasset.IsStable:
             coinasset.ratio_nonstable = 0.0
         else:
-            coinasset.ratio_nonstable = coinasset.usdt_value / (CW.Total_Assets_value - CW.Stable_Assets_value) * 100
+            coinasset.ratio_nonstable = coinasset.usdt_value / nonstable_assets_value * 100 if nonstable_assets_value else 0.0
 
         if coinasset.NeedCluster:
             if coinasset.MainCoin == coinasset.symbol:
@@ -310,7 +390,7 @@ def calculate_ratios(CW):
                 total_clustered_value = sum(asset.usdt_value for asset in clustered_assets)
                 coinasset.ratio_clustered = total_clustered_value / CW.Total_Assets_value * 100
                 if not coinasset.IsStable:
-                    coinasset.ratio_clustered_nonstable = total_clustered_value / (CW.Total_Assets_value - CW.Stable_Assets_value) * 100
+                    coinasset.ratio_clustered_nonstable = total_clustered_value / nonstable_assets_value * 100 if nonstable_assets_value else 0.0
                 else:
                     coinasset.ratio_clustered_nonstable = 0.0
             else:

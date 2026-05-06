@@ -80,15 +80,16 @@ class CoinWallet:
             "usdt_value": round(self.KRW_fees, 3)
         })
         CurrentKRWBalance = self.KRW_deposits - self.KRW_withdrawals - self.KRW_fees
+        total_krw_balance_usdt = CurrentKRWBalance / self.CurrentKRWUSDT if self.CurrentKRWUSDT else 0.0
         data.append({
             "symbol": "Total KRW Balance",
-            "usdt_value": round(CurrentKRWBalance / self.CurrentKRWUSDT, 3),
+            "usdt_value": round(total_krw_balance_usdt, 3),
             "ratio": round(CurrentKRWBalance, 3)
         })
         data.append({
             "symbol": "Benefit",
-            "usdt_value": round(self.Total_Assets_value - (CurrentKRWBalance / self.CurrentKRWUSDT), 2),
-            "ratio": round((self.Total_Assets_value - (CurrentKRWBalance / self.CurrentKRWUSDT)) * self.CurrentKRWUSDT, 1)
+            "usdt_value": round(self.Total_Assets_value - total_krw_balance_usdt, 2),
+            "ratio": round((self.Total_Assets_value - total_krw_balance_usdt) * self.CurrentKRWUSDT, 1)
         })
         data.append({
             "symbol": "Current KRW USDT Rate",
@@ -102,4 +103,3 @@ class CoinWallet:
         df = pd.DataFrame(data)
         df.to_excel(filename, index=False)
         print(f"Exported assets to {filename}")
-
