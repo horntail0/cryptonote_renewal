@@ -8,7 +8,7 @@ import webbrowser
 from flask import Flask, render_template_string
 
 import main
-from CoinAsset import CLUSTER_ASSET
+from CoinAsset import CLUSTER_ASSET, STABLE_ASSET
 
 app = Flask(__name__)
 
@@ -89,12 +89,12 @@ HTML_TEMPLATE = """<!doctype html>
         <div class=\"sub\">���� �ð�: {{ generated_at }}</div>
         <div class=\"note\">����: 717702���� ����� ���ǵǾ����ϴ�.</div>
         <div class=\"summary-grid\">
-          <div class=\"summary-card\"><div class=\"summary-k\">Total Assets (KRW)</div><div class=\"summary-v\">{{ total_assets_krw_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">Total Assets (KRW)</div><div class=\"summary-v\" id=\"summary-total-krw\">{{ total_assets_krw_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">USDT/KRW</div><div class=\"summary-v\">{{ usdt_krw_fmt }}</div></div>
-          <div class=\"summary-card\"><div class=\"summary-k\">Stable Ratio (%)</div><div class=\"summary-v\">{{ stable_ratio_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">Stable Ratio (%)</div><div class=\"summary-v\" id=\"summary-stable-ratio\">{{ stable_ratio_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">KRW Principal</div><div class=\"summary-v\">{{ krw_principal_fmt }}</div></div>
-          <div class=\"summary-card\"><div class=\"summary-k\">Benefit (KRW)</div><div class=\"summary-v\">{{ benefit_krw_fmt }}</div></div>
-          <div class=\"summary-card\"><div class=\"summary-k\">Benefit Ratio (%)</div><div class=\"summary-v\">{{ benefit_ratio_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">Benefit (KRW)</div><div class=\"summary-v\" id=\"summary-benefit-krw\">{{ benefit_krw_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">Benefit Ratio (%)</div><div class=\"summary-v\" id=\"summary-benefit-ratio\">{{ benefit_ratio_fmt }}</div></div>
         </div>
       </div>
       <div class=\"total\">
@@ -154,6 +154,9 @@ HTML_TEMPLATE = """<!doctype html>
     const clusterToggle = document.getElementById('cluster-toggle');
     const tbody = document.getElementById('asset-body');
     const sortableHeaders = Array.from(document.querySelectorAll('th.sortable'));
+    const usdtKrwRate = Number({{ usdt_krw_raw | tojson }});
+    const krwPrincipal = Number({{ krw_principal_raw | tojson }});
+    const stableSymbols = new Set({{ stable_symbols_json | safe }});
     let sortKey = 'value';
     let sortDir = 'desc';
     const rows = Array.from(document.querySelectorAll('.asset-row')).map((row) => ({
@@ -165,11 +168,16 @@ HTML_TEMPLATE = """<!doctype html>
       displayValue: 0
     }));
     const totalEl = document.getElementById('visible-total');
+    const summaryTotalKrwEl = document.getElementById('summary-total-krw');
+    const summaryStableRatioEl = document.getElementById('summary-stable-ratio');
+    const summaryBenefitKrwEl = document.getElementById('summary-benefit-krw');
+    const summaryBenefitRatioEl = document.getElementById('summary-benefit-ratio');
 
     function formatUsdt(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function formatAmount(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 8, maximumFractionDigits: 8 }); }
     function formatPrice(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 5, maximumFractionDigits: 5 }); }
     function formatRatio(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function formatKrw(value) { return value.toLocaleString(undefined, { maximumFractionDigits: 0 }); }
     function updateSortIndicators() {
       sortableHeaders.forEach((th) => {
         const indicator = th.querySelector('.sort-indicator');
@@ -205,16 +213,27 @@ HTML_TEMPLATE = """<!doctype html>
         item.usdtValue = usdtValue;
       });
 
-      let total = 0;
+      const total = rows.reduce((sum, item) => sum + item.usdtValue, 0);
+      const stableTotal = rows.reduce((sum, item) => {
+        return stableSymbols.has(item.symbol) ? sum + item.usdtValue : sum;
+      }, 0);
+
       if (clusteredOn) {
         const clusterTotals = {};
         const symbolPriceMap = {};
+        const clusterPriceCandidates = {};
 
         rows.forEach((item) => {
           const itemPrice = item.amount === 0 ? 0 : item.usdtValue / item.amount;
           symbolPriceMap[item.symbol] = itemPrice;
           if (!clusterTotals[item.main]) {
             clusterTotals[item.main] = { usdtValue: 0 };
+          }
+          if (!clusterPriceCandidates[item.main]) {
+            clusterPriceCandidates[item.main] = [];
+          }
+          if (itemPrice > 0) {
+            clusterPriceCandidates[item.main].push(itemPrice);
           }
           clusterTotals[item.main].usdtValue += item.usdtValue;
         });
@@ -245,7 +264,6 @@ HTML_TEMPLATE = """<!doctype html>
             item.el.style.display = 'none';
           } else {
             item.el.style.display = '';
-            total += usdtValue;
           }
         });
       } else {
@@ -264,7 +282,6 @@ HTML_TEMPLATE = """<!doctype html>
             item.el.style.display = 'none';
           } else {
             item.el.style.display = '';
-            total += usdtValue;
           }
         });
       }
@@ -277,6 +294,14 @@ HTML_TEMPLATE = """<!doctype html>
       sortVisibleRows();
       updateSortIndicators();
       totalEl.textContent = formatUsdt(total);
+      const totalKrw = total * usdtKrwRate;
+      const benefitKrw = totalKrw - krwPrincipal;
+      const benefitRatio = krwPrincipal !== 0 ? (benefitKrw / krwPrincipal) * 100 : 0;
+      const stableRatio = total > 0 ? (stableTotal / total) * 100 : 0;
+      summaryTotalKrwEl.textContent = formatKrw(totalKrw);
+      summaryStableRatioEl.textContent = formatRatio(stableRatio);
+      summaryBenefitKrwEl.textContent = formatKrw(benefitKrw);
+      summaryBenefitRatioEl.textContent = formatRatio(benefitRatio);
     }
 
     sortableHeaders.forEach((th) => {
@@ -374,10 +399,13 @@ def index():
         total_usdt_fmt=f"{total_usdt:,.3f}",
         total_assets_krw_fmt=f"{total_assets_krw:,.0f}",
         usdt_krw_fmt=f"{cw.CurrentKRWUSDT:,.5f}",
+        usdt_krw_raw=float(cw.CurrentKRWUSDT),
         stable_ratio_fmt=f"{stable_ratio:.2f}",
         krw_principal_fmt=f"{krw_principal:,.0f}",
+        krw_principal_raw=float(krw_principal),
         benefit_krw_fmt=f"{benefit_krw:,.0f}",
         benefit_ratio_fmt=f"{cw.Benefit_Ratio:.2f}",
+        stable_symbols_json=json.dumps(STABLE_ASSET, ensure_ascii=True),
     )
 
 
@@ -391,4 +419,3 @@ if __name__ == "__main__":
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
 
     app.run(host=host, port=port, debug=True, use_reloader=False)
-

@@ -30,6 +30,13 @@ def create_exchange_reader(exchange_name, reader_cls, *args):
         return None
 
 
+def is_enabled(env_name, default=False):
+    value = os.getenv(env_name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "y", "on")
+
+
 def run_cmd(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     return result.stdout.strip(), result.stderr.strip(), result.returncode
@@ -87,13 +94,17 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             os.getenv("BITHUMB_API_KEY"),
             os.getenv("BITHUMB_SECRET_KEY"),
         )
-        gateio1_reader = create_exchange_reader(
-            "gateio1",
-            Gateio_Reader.Gateio_Reader,
-            "gateio1",
-            os.getenv("GATEIO_API_KEY"),
-            os.getenv("GATEIO_SECRET_KEY"),
-        )
+        if is_enabled("GATEIO1_ENABLED", default=False):
+            gateio1_reader = create_exchange_reader(
+                "gateio1",
+                Gateio_Reader.Gateio_Reader,
+                "gateio1",
+                os.getenv("GATEIO_API_KEY"),
+                os.getenv("GATEIO_SECRET_KEY"),
+            )
+        else:
+            print("[gateio1] disabled by GATEIO1_ENABLED, skip reader creation.")
+            gateio1_reader = None
         gateio2_reader = create_exchange_reader(
             "gateio2",
             Gateio_Reader.Gateio_Reader,
@@ -123,13 +134,17 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             os.getenv("BITHUMB_API_KEY_V1"),
             os.getenv("BITHUMB_SECRET_KEY_V1"),
         )
-        gateio1_reader = create_exchange_reader(
-            "gateio1_mobile",
-            Gateio_Reader.Gateio_Reader,
-            "gateio1_mobile",
-            os.getenv("GATEIO_API_KEY"),
-            os.getenv("GATEIO_SECRET_KEY"),
-        )
+        if is_enabled("GATEIO1_ENABLED", default=False):
+            gateio1_reader = create_exchange_reader(
+                "gateio1_mobile",
+                Gateio_Reader.Gateio_Reader,
+                "gateio1_mobile",
+                os.getenv("GATEIO_API_KEY"),
+                os.getenv("GATEIO_SECRET_KEY"),
+            )
+        else:
+            print("[gateio1_mobile] disabled by GATEIO1_ENABLED, skip reader creation.")
+            gateio1_reader = None
         gateio2_reader = create_exchange_reader(
             "gateio2_mobile",
             Gateio_Reader.Gateio_Reader,

@@ -3,5 +3,56 @@
     { "symbol": "BTC", "amount": 0.015 },
     { "symbol": "ETH", "amount": 0.4 },
     { "symbol": "USDT", "amount": 1200 }
+  ],
+  "web3_wallets": [
+    {
+      "name": "my-ethereum-wallet",
+      "enabled": false,
+      "chain": "ethereum",
+      "address": "0x0000000000000000000000000000000000000000",
+      "include_native": true,
+      "tokens": [
+        {
+          "symbol": "USDT",
+          "contract": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "decimals": 6
+        },
+        {
+          "symbol": "USDC",
+          "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "decimals": 6
+        }
+      ]
+    },
+    {
+      "name": "my-bsc-wallet",
+      "enabled": false,
+      "provider": "binance_web3",
+      "chain": "bsc",
+      "address": "0x0000000000000000000000000000000000000000",
+      "include_native": true,
+      "tokens": []
+    },
+    {
+      "name": "my-solana-wallet",
+      "enabled": false,
+      "provider": "binance_web3",
+      "chain": "solana",
+      "address": "So11111111111111111111111111111111111111112"
+    },
+    {
+      "name": "my-bitcoin-segwit-wallet",
+      "enabled": false,
+      "provider": "bitcoin_explorer",
+      "chain": "bitcoin",
+      "address": "bc1q00000000000000000000000000000000000000"
+    },
+    {
+      "name": "my-ethereum-explorer-wallet",
+      "enabled": false,
+      "provider": "ethereum_explorer",
+      "chain": "ethereum",
+      "address": "0x0000000000000000000000000000000000000000"
+    }
   ]
 }

@@ -22,7 +22,96 @@ python main.py --output-format both
 - Bithumb: `BITHUMB_API_KEY`, `BITHUMB_SECRET_KEY`
 - Gate.io(1): `GATEIO_API_KEY`, `GATEIO_SECRET_KEY`
 - Gate.io(2): `GATEIO_API_KEY_2ND`, `GATEIO_SECRET_KEY_2ND`
+- Gate.io(1) 활성화 여부: `GATEIO1_ENABLED` (기본값 `false`)
 - 개인지갑 파일: `PERSONAL_WALLET_FILE` (기본값 `personal_wallet_assets.json`)
+- Web3 지갑 RPC(선택): `WEB3_ETHEREUM_RPC_URL`, `WEB3_BSC_RPC_URL`, `WEB3_POLYGON_RPC_URL`, `WEB3_ARBITRUM_RPC_URL`, `WEB3_BASE_RPC_URL`
+- Bitcoin explorer API(선택): `BITCOIN_EXPLORER_API_URL` (기본값 `https://blockstream.info/api`)
+- Ethereum explorer API(선택): `ETHEREUM_EXPLORER_API_URL`, `ETHPLORER_API_KEY` (기본값 `freekey`)
+
+## 2-1) 개인 Web3 지갑 자산 조회
+
+`personal_wallet_assets.json`에 `web3_wallets`를 추가하면 private Web3 wallet 주소의 온체인 잔액도 합산됩니다.
+
+주소만으로 토큰을 자동 조회하려면 Binance Web3 조회 방식을 사용합니다. 현재 Binance Web3 조회는 `bsc`, `base`, `solana`를 지원합니다.
+
+```json
+{
+  "assets": [
+    { "symbol": "BTC", "amount": 0.015 }
+  ],
+  "web3_wallets": [
+    {
+      "name": "my-bsc-wallet",
+      "enabled": true,
+      "provider": "binance_web3",
+      "chain": "bsc",
+      "address": "0x내지갑주소"
+    }
+  ]
+}
+```
+
+EVM RPC 방식도 계속 사용할 수 있습니다. 이 방식은 `ethereum`, `bsc`, `polygon`, `arbitrum`, `base`를 지원하지만 ERC-20 토큰은 `tokens`에 컨트랙트 주소를 등록해야 합니다.
+
+Bitcoin SegWit 주소는 `bitcoin_explorer` provider로 가져올 수 있습니다. `bc1...` 네이티브 SegWit과 `3...` P2SH-SegWit 주소를 지원합니다.
+
+```json
+{
+  "web3_wallets": [
+    {
+      "name": "my-bitcoin-segwit-wallet",
+      "enabled": true,
+      "provider": "bitcoin_explorer",
+      "chain": "bitcoin",
+      "address": "bc1q내비트코인주소"
+    }
+  ]
+}
+```
+
+Ethereum 주소에서 ETH와 ERC-20 토큰을 contract 입력 없이 자동 조회하려면 `ethereum_explorer` provider를 사용합니다. 기본값은 Ethplorer `freekey`이며, 사용량이 많으면 `ETHPLORER_API_KEY`를 별도로 설정하세요.
+
+```json
+{
+  "web3_wallets": [
+    {
+      "name": "my-ethereum-explorer-wallet",
+      "enabled": true,
+      "provider": "ethereum_explorer",
+      "chain": "ethereum",
+      "address": "0x내이더리움주소"
+    }
+  ]
+}
+```
+
+```json
+{
+  "assets": [
+    { "symbol": "BTC", "amount": 0.015 }
+  ],
+  "web3_wallets": [
+    {
+      "name": "my-ethereum-wallet",
+      "enabled": true,
+      "chain": "ethereum",
+      "address": "0x내지갑주소",
+      "include_native": true,
+      "tokens": [
+        {
+          "symbol": "USDT",
+          "contract": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "decimals": 6
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `include_native: true`이면 해당 체인의 네이티브 코인(예: Ethereum/Base/Arbitrum은 `ETH`, BSC는 `BNB`)을 조회합니다.
+- ERC-20 토큰은 `tokens`에 컨트랙트 주소를 등록한 것만 조회합니다.
+- `rpc_url`을 지갑 항목에 직접 넣거나 `.env`의 `WEB3_*_RPC_URL`로 커스텀 RPC를 지정할 수 있습니다.
 
 ## 3) 파일별 역할 / 메서드 / 수정 포인트
 
