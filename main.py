@@ -79,6 +79,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
         sync_time()
 
     os.system("w32tm /resync")
+    disabled_readers = set()
     if os.environ["MOBILE"] == "0":
         binance_reader = create_exchange_reader(
             "binance",
@@ -104,6 +105,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             )
         else:
             print("[gateio1] disabled by GATEIO1_ENABLED, skip reader creation.")
+            disabled_readers.add("gateio1")
             gateio1_reader = None
         gateio2_reader = create_exchange_reader(
             "gateio2",
@@ -144,6 +146,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             )
         else:
             print("[gateio1_mobile] disabled by GATEIO1_ENABLED, skip reader creation.")
+            disabled_readers.add("gateio1")
             gateio1_reader = None
         gateio2_reader = create_exchange_reader(
             "gateio2_mobile",
@@ -161,8 +164,11 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
         )
 
     exchange_assets = {}
+    failed_readers = []
     for reader_name, reader in CW.readers.items():
         if reader is None:
+            if reader_name != "personal" and reader_name not in disabled_readers:
+                failed_readers.append(f"{reader_name}: reader creation failed")
             continue
         print(f"Loading assets from {reader_name}...")
         try:
@@ -172,6 +178,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
                 assets = reader.load_assets()
         except Exception as e:
             print(f"[{reader_name}] 자산 로딩 실패, skip: {e}")
+            failed_readers.append(f"{reader_name}: asset loading failed: {e}")
             continue
         temp_assets = CW.get_temporary_assets_dict(reader_name)
         if temp_assets:
@@ -180,6 +187,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
         CW.assets = merge_coinasset_dicts(CW.assets, assets)
 
     CW.exchange_assets = exchange_assets
+    CW.failed_readers = failed_readers
 
     print("All assets loaded and merged successfully.")
     print("CoinWallet initialized with readers:", CW.readers.keys())
