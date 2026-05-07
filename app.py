@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import csv
 from datetime import datetime
 import json
 import os
@@ -73,6 +74,9 @@ HTML_TEMPLATE = """<!doctype html>
     tr:hover td { background: rgba(56, 189, 248, 0.08); transition: 0.2s ease; }
     .exchange { font-weight: 700; color: var(--accent); }
     .foot { padding: 12px 18px 18px; color: var(--muted); font-size: 12px; }
+    .section-head { padding: 16px 18px 0; }
+    .section-title { margin: 0; font-size: 18px; font-weight: 800; }
+    .empty { padding: 0 18px 18px; color: var(--muted); font-size: 13px; }
     @media (max-width: 720px) {
       body { padding: 14px; }
       .hero { flex-direction: column; align-items: flex-start; }
@@ -120,6 +124,43 @@ HTML_TEMPLATE = """<!doctype html>
         </label>
         {% endfor %}
       </div>
+    </section>
+
+    <section class=\"panel table-wrap\">
+      <div class=\"section-head\">
+        <h2 class=\"section-title\">ROI Report</h2>
+      </div>
+      {% if roi_rows %}
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th style=\"text-align:right\">Current Value</th>
+            <th style=\"text-align:right\">Buy Cost</th>
+            <th style=\"text-align:right\">Sell Income</th>
+            <th style=\"text-align:right\">Total PnL</th>
+            <th style=\"text-align:right\">ROI (%)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in roi_rows %}
+          <tr>
+            <td class=\"exchange\">{{ row.symbol }}</td>
+            <td class=\"num\">{{ row.current_value_usdt }}</td>
+            <td class=\"num\">{{ row.buy_cost_usdt }}</td>
+            <td class=\"num\">{{ row.sell_income_usdt }}</td>
+            <td class=\"num\">{{ row.total_pnl_usdt }}</td>
+            <td class=\"num\">{{ row.roi_percent }}</td>
+            <td>{{ row.status }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class=\"foot\">Source: {{ roi_source }}{% if roi_generated_at %} / Updated: {{ roi_generated_at }}{% endif %}</div>
+      {% else %}
+      <div class=\"empty\">ROI CSV가 없습니다. 먼저 <code>python roi_report.py --skip-fetch</code>로 생성하세요.</div>
+      {% endif %}
     </section>
 
     <section class=\"panel table-wrap\">
@@ -379,10 +420,42 @@ def _build_symbol_rows(cw):
     return rows
 
 
+def _format_csv_number(value, digits=3):
+    if value in (None, "", "N/A"):
+        return "N/A"
+    try:
+        return f"{float(value):,.{digits}f}"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _load_roi_rows(path="roi_report.csv"):
+    if not os.path.exists(path):
+        return [], path, None
+
+    rows = []
+    with open(path, "r", encoding="utf-8", newline="") as file:
+        reader = csv.DictReader(file)
+        for item in reader:
+            rows.append({
+                "symbol": item.get("symbol", ""),
+                "current_value_usdt": _format_csv_number(item.get("current_value_usdt")),
+                "buy_cost_usdt": _format_csv_number(item.get("buy_cost_usdt")),
+                "sell_income_usdt": _format_csv_number(item.get("sell_income_usdt")),
+                "total_pnl_usdt": _format_csv_number(item.get("total_pnl_usdt")),
+                "roi_percent": _format_csv_number(item.get("roi_percent"), 2),
+                "status": item.get("status", ""),
+            })
+
+    updated_at = datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y-%m-%d %H:%M:%S")
+    return rows, path, updated_at
+
+
 @app.route("/")
 def index():
     cw = main.main(output_format="none")
     rows = _build_symbol_rows(cw)
+    roi_rows, roi_source, roi_generated_at = _load_roi_rows()
     exchanges = list(getattr(cw, "exchange_assets", {}).keys())
     total_usdt = sum(row["usdt_value_raw"] for row in rows)
     stable_ratio = (cw.Stable_Assets_value / cw.Total_Assets_value * 100) if cw.Total_Assets_value else 0.0
@@ -395,6 +468,9 @@ def index():
         generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         exchanges=exchanges,
         rows=rows,
+        roi_rows=roi_rows,
+        roi_source=roi_source,
+        roi_generated_at=roi_generated_at,
         total_usdt=total_usdt,
         total_usdt_fmt=f"{total_usdt:,.3f}",
         total_assets_krw_fmt=f"{total_assets_krw:,.0f}",

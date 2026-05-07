@@ -13,6 +13,9 @@ python main.py --output-format both
 
 - 결과물: `assets.xlsx`, `assets.html`
 - 테스트성 실행: `python main_test.py`, `python main_test_2.py`
+- ROI 리포트: `python roi_report.py --skip-fetch`
+  - `app.py` 대시보드는 `roi_report.csv`가 있으면 ROI 섹션에 표시합니다.
+  - ROI 생성은 거래소 로딩 실패가 하나라도 있으면 기본적으로 중단됩니다.
 
 ## 2) 환경 변수(.env) 핵심
 
