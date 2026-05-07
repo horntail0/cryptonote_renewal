@@ -1,24 +1,29 @@
 {
   "assets": [
+  ],
+  "web3_wallets": [
     {
-      "symbol": "BTC",
-      "amount": 0.0076489
+      "name": "my-bsc-wallet",
+      "enabled": true,
+      "provider": "binance_web3",
+      "chain": "bsc",
+      "address": "0x6e8C6FA56eAa843DE72322786d4a7f23131229ad",
+      "include_native": true,
+      "tokens": []
     },
     {
-      "symbol": "ETH",
-      "amount": 0.05414
+      "name": "my-solana-wallet",
+      "enabled": true,
+      "provider": "binance_web3",
+      "chain": "solana",
+      "address": "BrHmALBSZj83fDZnbG5z9VwEnhfVj6Z57zYRs58CmgWz"
     },
     {
-      "symbol": "SOL",
-      "amount": 0.86184
-    },
-    {
-      "symbol": "JitoSOL",
-      "amount": 9.87077
-    },
-    {
-      "symbol": "slisBNB",
-      "amount": 0.28997
+      "name": "my-bitcoin-segwit-wallet",
+      "enabled": true,
+      "provider": "bitcoin_explorer",
+      "chain": "bitcoin",
+      "address": "bc1qd2zlfctsm0qtwgsphxpxeayfrazd6vlx0zcufc"
     }
   ]
 }
