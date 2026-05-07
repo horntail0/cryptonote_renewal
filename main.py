@@ -1,4 +1,4 @@
-import os
+﻿import os
 import subprocess
 import time
 import copy
@@ -68,17 +68,36 @@ def sync_time():
     print("[*] Running time sync...")
     out, err, code = run_cmd("w32tm /resync")
     if code == 0:
-        print(f"[+] Time sync success: {out}")
+        message = out or "w32tm /resync succeeded."
+        print(f"[+] Time sync success: {message}")
+        return True, message
     else:
-        print(f"[!] Time sync failed: {err or out}")
+        message = err or out or "w32tm /resync failed."
+        print(f"[!] Time sync failed: {message}")
+        return False, message
+
+
+def run_time_sync():
+    status = {
+        "service_ready": False,
+        "resync_ok": False,
+        "message": "",
+    }
+
+    if start_time_service():
+        status["service_ready"] = True
+        time.sleep(1)
+        ok, message = sync_time()
+        status["resync_ok"] = ok
+        status["message"] = message
+    else:
+        status["message"] = "Windows Time service is not running."
+
+    return status
 
 
 def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html"):
-    if start_time_service():
-        time.sleep(1)
-        sync_time()
-
-    os.system("w32tm /resync")
+    time_sync_status = run_time_sync()
     if os.environ["MOBILE"] == "0":
         binance_reader = create_exchange_reader(
             "binance",
@@ -160,6 +179,8 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             personal_reader=create_personal_wallet_reader(),
         )
 
+    CW.time_sync_status = time_sync_status
+
     exchange_assets = {}
     for reader_name, reader in CW.readers.items():
         if reader is None:
@@ -200,9 +221,9 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
             CW.CurrentKRWUSDT = bithumb_reader.get_KRW_Currency("USDT")
             CW.Benefit_Ratio = calculate_benefit_ratio(CW)
         except Exception as e:
-            print(f"[bithumb] KRW 입출금/환율 조회 실패, skip: {e}")
+            print(f"[bithumb] KRW 입출금/수수료 조회 실패, skip: {e}")
     else:
-        print("[bithumb] reader가 없어 KRW 입출금/환율 조회를 skip합니다.")
+        print("[bithumb] reader가 없어 KRW 입출금/수수료 조회를 skip합니다.")
 
     print(f"Total assets value: {CW.Total_Assets_value:.2f} USDT")
     print(f"Total stable assets value: {CW.Stable_Assets_value:.2f} USDT")
@@ -216,7 +237,7 @@ def main(output_format="excel", excel_path="assets.xlsx", html_path="assets.html
     if output_format in ("html", "both"):
         export_assets_to_html(CW, html_path)
     print(f"Data Type of assets: {type(CW.assets)}")
-    print("참고: 717702원은 사고로 유실되었습니다.")
+    print("참고: 717702자산은 별도로 유지해두었습니다.")
     return CW
 
 
@@ -423,3 +444,4 @@ if __name__ == "__main__":
     parser.add_argument("--html-path", default="assets.html")
     args = parser.parse_args()
     main(output_format=args.output_format, excel_path=args.excel_path, html_path=args.html_path)
+

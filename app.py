@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 from datetime import datetime
 import json
 import os
@@ -51,6 +51,8 @@ HTML_TEMPLATE = """<!doctype html>
     .title { margin: 0; font-size: 28px; letter-spacing: 0.2px; font-weight: 800; }
     .sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
     .note { margin-top: 8px; color: #fda4af; font-size: 12px; font-weight: 600; }
+    .sync-ok { margin-top: 6px; color: #86efac; font-size: 12px; font-weight: 600; }
+    .sync-fail { margin-top: 6px; color: #fda4af; font-size: 12px; font-weight: 600; }
     .total { text-align: right; }
     .total .label { color: var(--muted); font-size: 12px; }
     .total .value { color: var(--ok); font-size: 26px; font-weight: 800; margin-top: 4px; }
@@ -86,33 +88,36 @@ HTML_TEMPLATE = """<!doctype html>
     <section class=\"panel hero\">
       <div class=\"hero-left\">
         <h1 class=\"title\">Crypto Portfolio Live Dashboard</h1>
-        <div class=\"sub\">���� �ð�: {{ generated_at }}</div>
-        <div class=\"note\">����: 717702���� ����� ���ǵǾ����ϴ�.</div>
+        <div class=\"sub\">생성 시간: {{ generated_at }}</div>
+        <div class=\"{{ 'sync-ok' if time_sync_ok else 'sync-fail' }}\">{{ time_sync_text }}</div>
+        <div class=\"note\">참고: 717702 자산은 별도로 유지되어 집계됩니다.</div>
         <div class=\"summary-grid\">
           <div class=\"summary-card\"><div class=\"summary-k\">Total Assets (KRW)</div><div class=\"summary-v\" id=\"summary-total-krw\">{{ total_assets_krw_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">USDT/KRW</div><div class=\"summary-v\">{{ usdt_krw_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">Stable Ratio (%)</div><div class=\"summary-v\" id=\"summary-stable-ratio\">{{ stable_ratio_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">KRW Principal</div><div class=\"summary-v\">{{ krw_principal_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">투자 KRW (717,702 미입금 가정)</div><div class=\"summary-v\" id=\"summary-adjusted-principal\">{{ adjusted_principal_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">Benefit (KRW)</div><div class=\"summary-v\" id=\"summary-benefit-krw\">{{ benefit_krw_fmt }}</div></div>
           <div class=\"summary-card\"><div class=\"summary-k\">Benefit Ratio (%)</div><div class=\"summary-v\" id=\"summary-benefit-ratio\">{{ benefit_ratio_fmt }}</div></div>
+          <div class=\"summary-card\"><div class=\"summary-k\">Benefit Ratio (%) (717,702 미입금 가정)</div><div class=\"summary-v\" id=\"summary-adjusted-benefit-ratio\">{{ adjusted_benefit_ratio_fmt }}</div></div>
         </div>
       </div>
       <div class=\"total\">
-        <div class=\"label\">ǥ�� �հ� (USDT)</div>
+        <div class=\"label\">표시 합계 (USDT)</div>
         <div class=\"value\" id=\"visible-total\">{{ total_usdt_fmt }}</div>
       </div>
     </section>
 
     <section class=\"panel toolbar\" id=\"toggle-zone\">
       <div class=\"toggle-row\">
-        <span class=\"k\">���</span>
+        <span class=\"k\">占쏙옙占?/span>
         <label class=\"chip\">
           <input type=\"checkbox\" id=\"cluster-toggle\" checked />
           <span>Clustered</span>
         </label>
       </div>
       <div class=\"toggle-row\">
-        <span class=\"k\">�ŷ���</span>
+        <span class=\"k\">거래소</span>
         {% for exchange in exchanges %}
         <label class=\"chip\">
           <input type=\"checkbox\" class=\"exchange-toggle\" value=\"{{ exchange }}\" checked />
@@ -128,8 +133,8 @@ HTML_TEMPLATE = """<!doctype html>
           <tr>
             <th>Symbol</th>
             <th style=\"text-align:right\">Amount</th>
-            <th class=\"sortable\" data-sort-key=\"price\" style=\"text-align:right\">USDT Price<span class=\"sort-indicator\">��</span></th>
-            <th class=\"sortable\" data-sort-key=\"value\" style=\"text-align:right\">USDT Value<span class=\"sort-indicator\">��</span></th>
+            <th class=\"sortable\" data-sort-key=\"price\" style=\"text-align:right\">USDT Price<span class=\"sort-indicator\">占쏙옙</span></th>
+            <th class=\"sortable\" data-sort-key=\"value\" style=\"text-align:right\">USDT Value<span class=\"sort-indicator\">占쏙옙</span></th>
             <th style=\"text-align:right\">Ratio (%)</th>
           </tr>
         </thead>
@@ -145,7 +150,7 @@ HTML_TEMPLATE = """<!doctype html>
           {% endfor %}
         </tbody>
       </table>
-      <div class=\"foot\">Clustered ON: ���� �ɺ� �������� �ջ� ǥ�õ˴ϴ�.</div>
+      <div class=\"foot\">Clustered ON: 같은 메인 심볼 자산을 합산해 표시합니다.</div>
     </section>
   </div>
 
@@ -156,6 +161,7 @@ HTML_TEMPLATE = """<!doctype html>
     const sortableHeaders = Array.from(document.querySelectorAll('th.sortable'));
     const usdtKrwRate = Number({{ usdt_krw_raw | tojson }});
     const krwPrincipal = Number({{ krw_principal_raw | tojson }});
+    const accidentLossKrw = Number({{ accident_loss_krw_raw | tojson }});
     const stableSymbols = new Set({{ stable_symbols_json | safe }});
     let sortKey = 'value';
     let sortDir = 'desc';
@@ -172,6 +178,8 @@ HTML_TEMPLATE = """<!doctype html>
     const summaryStableRatioEl = document.getElementById('summary-stable-ratio');
     const summaryBenefitKrwEl = document.getElementById('summary-benefit-krw');
     const summaryBenefitRatioEl = document.getElementById('summary-benefit-ratio');
+    const summaryAdjustedPrincipalEl = document.getElementById('summary-adjusted-principal');
+    const summaryAdjustedBenefitRatioEl = document.getElementById('summary-adjusted-benefit-ratio');
 
     function formatUsdt(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function formatAmount(value) { return value.toLocaleString(undefined, { minimumFractionDigits: 8, maximumFractionDigits: 8 }); }
@@ -182,7 +190,7 @@ HTML_TEMPLATE = """<!doctype html>
       sortableHeaders.forEach((th) => {
         const indicator = th.querySelector('.sort-indicator');
         const key = th.dataset.sortKey;
-        indicator.textContent = key === sortKey ? (sortDir === 'asc' ? '��' : '��') : '��';
+        indicator.textContent = key === sortKey ? (sortDir === 'asc' ? '↑' : '↓') : '↕';
       });
     }
     function sortVisibleRows() {
@@ -297,11 +305,16 @@ HTML_TEMPLATE = """<!doctype html>
       const totalKrw = total * usdtKrwRate;
       const benefitKrw = totalKrw - krwPrincipal;
       const benefitRatio = krwPrincipal !== 0 ? (benefitKrw / krwPrincipal) * 100 : 0;
+      const adjustedPrincipal = krwPrincipal - accidentLossKrw;
+      const adjustedBenefitKrw = totalKrw - adjustedPrincipal;
+      const adjustedBenefitRatio = adjustedPrincipal !== 0 ? (adjustedBenefitKrw / adjustedPrincipal) * 100 : 0;
       const stableRatio = total > 0 ? (stableTotal / total) * 100 : 0;
       summaryTotalKrwEl.textContent = formatKrw(totalKrw);
       summaryStableRatioEl.textContent = formatRatio(stableRatio);
       summaryBenefitKrwEl.textContent = formatKrw(benefitKrw);
       summaryBenefitRatioEl.textContent = formatRatio(benefitRatio);
+      summaryAdjustedPrincipalEl.textContent = formatKrw(adjustedPrincipal);
+      summaryAdjustedBenefitRatioEl.textContent = formatRatio(adjustedBenefitRatio);
     }
 
     sortableHeaders.forEach((th) => {
@@ -382,17 +395,31 @@ def _build_symbol_rows(cw):
 @app.route("/")
 def index():
     cw = main.main(output_format="none")
+    time_sync_status = getattr(cw, "time_sync_status", {}) or {}
+    time_sync_ok = bool(time_sync_status.get("service_ready")) and bool(time_sync_status.get("resync_ok"))
+    time_sync_message = time_sync_status.get("message", "")
+    if time_sync_ok:
+        time_sync_text = f"시간 동기화 성공: {time_sync_message}"
+    else:
+        time_sync_text = f"시간 동기화 실패(권한 확인 필요): {time_sync_message}"
+
     rows = _build_symbol_rows(cw)
     exchanges = list(getattr(cw, "exchange_assets", {}).keys())
     total_usdt = sum(row["usdt_value_raw"] for row in rows)
     stable_ratio = (cw.Stable_Assets_value / cw.Total_Assets_value * 100) if cw.Total_Assets_value else 0.0
     krw_principal = cw.KRW_deposits - cw.KRW_withdrawals - cw.KRW_fees
+    accident_loss_krw = 717702.0
+    adjusted_principal = krw_principal - accident_loss_krw
     benefit_krw = (cw.Total_Assets_value * cw.CurrentKRWUSDT) - krw_principal
+    adjusted_benefit_krw = (cw.Total_Assets_value * cw.CurrentKRWUSDT) - adjusted_principal
+    adjusted_benefit_ratio = (adjusted_benefit_krw / adjusted_principal * 100) if adjusted_principal else 0.0
     total_assets_krw = cw.Total_Assets_value * cw.CurrentKRWUSDT
 
     return render_template_string(
         HTML_TEMPLATE,
         generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        time_sync_ok=time_sync_ok,
+        time_sync_text=time_sync_text,
         exchanges=exchanges,
         rows=rows,
         total_usdt=total_usdt,
@@ -403,8 +430,11 @@ def index():
         stable_ratio_fmt=f"{stable_ratio:.2f}",
         krw_principal_fmt=f"{krw_principal:,.0f}",
         krw_principal_raw=float(krw_principal),
+        adjusted_principal_fmt=f"{adjusted_principal:,.0f}",
+        accident_loss_krw_raw=float(accident_loss_krw),
         benefit_krw_fmt=f"{benefit_krw:,.0f}",
         benefit_ratio_fmt=f"{cw.Benefit_Ratio:.2f}",
+        adjusted_benefit_ratio_fmt=f"{adjusted_benefit_ratio:.2f}",
         stable_symbols_json=json.dumps(STABLE_ASSET, ensure_ascii=True),
     )
 
@@ -419,3 +449,4 @@ if __name__ == "__main__":
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
 
     app.run(host=host, port=port, debug=True, use_reloader=False)
+
